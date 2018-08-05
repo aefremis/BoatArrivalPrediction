@@ -31,4 +31,9 @@ distVessel <- function(Indvessel){
   vesselfullKineticsTomodel
 }
 
+timedistance <- function (timeseries){
+  reptime <- c(NA,diff.Date(timeseries))
+  reptime    
+}
+
 
