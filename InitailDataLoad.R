@@ -95,72 +95,89 @@ dist_par_all <- readRDS("kineticsTofeatureswithDist.rds")
 ###count duration of each interobservation from PIR per trip
 #order by mmsi and timestamo
 
-kineticsToModel <- dist_par_all[order(mmsi,timestamp)]
+# kineticsToModel <- dist_par_all[order(mmsi,timestamp)]
 
 # assume entrance in port in 800m
-kineticsToModel <- kineticsToModel[distancePIR>0.8]
-kineticsToModel <- kineticsToModel[,distancePIR:=round(distancePIR,1)]
+# kineticsToModel <- kineticsToModel[distancePIR>0.8]
+# kineticsToModel <- kineticsToModel[,distancePIR:=round(distancePIR,1)]
 
 #remove low observations vessels
-vesselsToCut <- kineticsToModel[,.N,by=mmsi][N<100]$mmsi
-kineticsToModel <- kineticsToModel[!mmsi %in% vesselsToCut]
+# vesselsToCut <- kineticsToModel[,.N,by=mmsi][N<100]$mmsi
+# kineticsToModel <- kineticsToModel[!mmsi %in% vesselsToCut]
 
 #characterize trip as inbound or outbound
 
 #calculate consecutive time differences
-kineticsToModel[,timeDistance:=timedistance(timestamp),by=mmsi]
+# kineticsToModel[,timeDistance:=timedistance(timestamp),by=mmsi]
 
 #create lag of distance
-kineticsToModel[, lagDistancePort := shift(distancePIR,
-                                           1L,
-                                           fill=NA,
-                                           type="lag"),
-                by=mmsi]
+# kineticsToModel[, lagDistancePort := shift(distancePIR,
+#                                            1L,
+#                                            fill=NA,
+#                                            type="lag"),
+#                 by=mmsi]
 
 #calculate difference of lagged distance with distance
-kineticsToModel[,DifferenceLag:=lagDistancePort-distancePIR]
-kineticsToModel <- kineticsToModel[!DifferenceLag==0]
+# kineticsToModel[,DifferenceLag:=lagDistancePort-distancePIR]
+# kineticsToModel <- kineticsToModel[!DifferenceLag==0]
 
 
 # find change in trend of distance
-kineticsToModel[,sign1:=sign(DifferenceLag)]
-
-kineticsToModel[, sign2 := shift(sign1,
-                                           1L,
-                                           fill=NA,
-                                           type="lag"),
-                by=mmsi]
-
-kineticsToModel <- kineticsToModel[complete.cases(kineticsToModel)]
-kineticsToModel[,flagOfChange:=ifelse(sign1==sign2,0,1)]
-kineticsToModel <- kineticsToModel[! sign1==0 ]
-kineticsToModel <- kineticsToModel[! sign2==0 ]
-
-
-onlyChanges <- kineticsToModel[flagOfChange==1]
-onlyChanges[,tripID:=1:nrow(onlyChanges)]
-onlyChanges <- onlyChanges[,c("mmsi","timestamp","tripID")]
-
-setkeyv(onlyChanges,c("mmsi","timestamp"))
-setkeyv(kineticsToModel,c("mmsi","timestamp"))
+# kineticsToModel[,sign1:=sign(DifferenceLag)]
+# 
+# kineticsToModel[, sign2 := shift(sign1,
+#                                            1L,
+#                                            fill=NA,
+#                                            type="lag"),
+#                 by=mmsi]
+# 
+# kineticsToModel <- kineticsToModel[complete.cases(kineticsToModel)]
+# kineticsToModel[,flagOfChange:=ifelse(sign1==sign2,0,1)]
+# kineticsToModel <- kineticsToModel[! sign1==0 ]
+# kineticsToModel <- kineticsToModel[! sign2==0 ]
+# 
+# 
+# onlyChanges <- kineticsToModel[flagOfChange==1]
+# onlyChanges[,tripID:=1:nrow(onlyChanges)]
+# onlyChanges <- onlyChanges[,c("mmsi","timestamp","tripID")]
+# 
+# setkeyv(onlyChanges,c("mmsi","timestamp"))
+# setkeyv(kineticsToModel,c("mmsi","timestamp"))
 
 
 #unique tripID's
-fullTripInfo <- merge(kineticsToModel,onlyChanges,all.x = T)
-fullTripInfo[,tripID:=na.locf(tripID,fromLast = T,na.rm = T)]
-fullTripInfo <- fullTripInfo[!tripID==1]
+# fullTripInfo <- merge(kineticsToModel,onlyChanges,all.x = T)
+# fullTripInfo[,tripID:=shift(tripID,1,fill=NA,type = "lead")]
+# fullTripInfo[,tripID:=na.locf(tripID,fromLast = T,na.rm = T)]
+# fullTripInfo <- fullTripInfo[!tripID==1]
+# 
+# fullTripInfo[,c("first","last"):=.(distancePIR[1],distancePIR[.N]),
+#              by=.(tripID)][,direction:=first-last]
+# 
+# fullTripInfo[,tripType:=ifelse(direction<0,"outbound","inbound")]
 
-fullTripInfo[,c("first","last"):=.(distancePIR[1],distancePIR[.N]),
-             by=.(tripID)][,direction:=first-last]
 
-fullTripInfo[,tripType:=ifelse(direction<0,"outbound","inbound")]
+# dataToModel <- fullTripInfo[tripType=="inbound"]
+# saveRDS(dataToModel,"kineticsInbound.rds")
+# kineticsInbound <- readRDS("kineticsInbound.rds")
+# 
+# varsToDrop <- c("lon","lat","lonPIR","latPIR","lagDistancePort","DifferenceLag","sign1","sign2",
+#                 "flagOfChange","first","last","direction","tripType")
+# kineticsToModel <- kineticsInbound[,!names(kineticsInbound) %in% varsToDrop,with=F]
 
+# add time to PIR
+# kineticsToModel[,timeToPort:=timestamp[.N]-timestamp,
+#                 by=tripID]
+# kineticsToModel[,timeToPort:=round(as.numeric(timeToPort),2)]
 
-dataToModel <- fullTripInfo[tripType=="inbound"]
-saveRDS(dataToModel,"kineticsInbound.rds")
 
 ###build model frame
-
-### candidaate models
-
+# varToModel <- c("speed","course","distancePIR","timeToPort")
+# 
+# modelFrame <- kineticsToModel[,names(kineticsToModel) %in% varToModel,with=F]
+# lowerLimit <- quantile(modelFrame$timeToPort,0.02)
+# upperLimit <- quantile(modelFrame$timeToPort,0.98)
+# modelFrame <- modelFrame[timeToPort >=lowerLimit & timeToPort <= upperLimit]
+# 
+# saveRDS(modelFrame,"modelFrame.rds")
 
