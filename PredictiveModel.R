@@ -6,7 +6,6 @@ set.seed(80)
 options(scipen=999)
 
 ### load helper user defined functions
-source("/PiachaMSc/BoatArrivalPrediction/auxiliaryFunctions.R")
 setwd("C:/PiachaMSc/BoatArrivalPrediction/kinematics/")
 
 
@@ -35,7 +34,21 @@ predictions <- h2o.predict(predictiveModel_NN,splits[[2]])
 
 predFrame <- cbind(as.data.table(splits[[2]]),as.data.table(round(predictions)))
 predFrame[,MAE:=mean((abs(timeToPort-predict)))] 
+# calculation of R-squared
 predFrame[,accuracy:=cor(predFrame$timeToPort,predFrame$predict)**2] 
 
 #save models
 saveRDS(predictiveModel_NN,"DNN_Boat.rds")
+
+
+
+###linear regression
+
+linmodel <- lm(timeToPort~.,data = data)
+summary(linmodel)
+library(car)
+vif(linmodel)
+plot(density(resid(linmodel)))
+
+               
+               
