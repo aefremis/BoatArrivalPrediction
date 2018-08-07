@@ -1,7 +1,7 @@
 ####Data Engineering for Boat Arrival Prediction Model####
 
 ### load libs
-library(data.table);library(doParallel);library(foreach);library(zoo)
+library(data.table);library(doParallel);library(foreach);library(zoo);library(devtools)
 
 ### load helper user defined functions
 source("/PiachaMSc/BoatArrivalPrediction/auxiliaryFunctions.R")

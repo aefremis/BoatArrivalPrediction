@@ -18,28 +18,24 @@ h2o.init(nthreads=-1)
 
 data <- readRDS("modelFrame.rds") 
 
-# data[,timeToPort:= round(timeToPort/60)]
-
 modelData <- as.h2o(data)
 
-
 ### split data into training test 
-splits <- h2o.splitFrame(modelData, 0.90,seed = 33) 
+splits <- h2o.splitFrame(modelData, 0.8) 
 
 
 #specify the parameters of the DL model
-dl1<-h2o.deeplearning(x=1:5, y="timeToPort",
+predictiveModel_NN<-h2o.deeplearning(x=1:5, y="timeToPort",
                       activation="Rectifier",
                       training_frame = splits[[1]], 
                       hidden=c(30,30,30),
                       standardize =T) 
 
-pred1 <- h2o.predict(dl1,splits[[2]])
+predictions <- h2o.predict(predictiveModel_NN,splits[[2]])
 
-predFrame <- cbind(as.data.table(splits[[2]]),as.data.table(round(pred1)))
+predFrame <- cbind(as.data.table(splits[[2]]),as.data.table(round(predictions)))
+predFrame[,MAE:=mean((abs(timeToPort-predict)))] 
+predFrame[,accuracy:=cor(predFrame$timeToPort,predFrame$predict)**2] 
 
-accuracy <- cor(predFrame$timeToPort,predFrame$predict)**2
-
-predFrame[,timeToPort:=round(timeToPort/60)]
-predFrame[,predict:=round(predict/60)]
-
+#save models
+saveRDS(predictiveModel_NN,"DNN_Boat.rds")
