@@ -1,3 +1,5 @@
+###function to calculate distance 
+
 earth.dist <- function (long1, lat1, long2, lat2)
 {
   rad <- pi/180
@@ -14,6 +16,7 @@ earth.dist <- function (long1, lat1, long2, lat2)
   return(d)
 }
 
+### function to calculate distance of every point to PIR
 
 distVessel <- function(Indvessel){
   library(data.table)
@@ -30,10 +33,4 @@ distVessel <- function(Indvessel){
   vesselfullKineticsTomodel[,distancePIR:=distVec]
   vesselfullKineticsTomodel
 }
-
-timedistance <- function (timeseries){
-  reptime <- c(NA,diff.Date(timeseries))
-  reptime    
-}
-
 

@@ -8,7 +8,7 @@ source("/PiachaMSc/BoatArrivalPrediction/auxiliaryFunctions.R")
 options(scipen=999)
 
 ###list files
-setwd("./kinematics/")
+# setwd("./kinematics/")
 
 ###get names of kinetics files
 fileNames <- list.files(paste0(getwd()))
@@ -121,10 +121,7 @@ kineticsToModel <- kineticsToModel[,distancePIR:=round(distancePIR,1)]
 vesselsToCut <- kineticsToModel[,.N,by=mmsi][N<100]$mmsi
 kineticsToModel <- kineticsToModel[!mmsi %in% vesselsToCut]
 
-##characterize trip as inbound or outbound
-
-###calculate consecutive time differences
-kineticsToModel[,timeDistance:=timedistance(timestamp),by=mmsi]
+###characterize trip as inbound or outbound
 
 ###create lag of distance [lag=1]
 kineticsToModel[, lagDistancePort := shift(distancePIR,
