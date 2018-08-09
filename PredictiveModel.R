@@ -10,7 +10,7 @@ setwd("C:/PiachaMSc/BoatArrivalPrediction/kinematics/")
 
 
 ###read model data
-###divide into train and test datasets
+
 
 #start H2O on your local machine using all available cores
 h2o.init(nthreads=-1) 
@@ -46,9 +46,7 @@ saveRDS(predictiveModel_NN,"DNN_Boat.rds")
 
 linmodel <- lm(timeToPort~.,data = data)
 summary(linmodel)
-library(car)
-vif(linmodel)
-plot(density(resid(linmodel)))
+
 
                
                
